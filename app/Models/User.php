@@ -81,6 +81,14 @@ class User extends Authenticatable implements PasskeyUser
     }
 
     /**
+     * Get listings created by this user.
+     */
+    public function listings(): HasMany
+    {
+        return $this->hasMany(Listing::class, 'user_id');
+    }
+
+    /**
      * Get the user's initials
      */
     public function initials(): string

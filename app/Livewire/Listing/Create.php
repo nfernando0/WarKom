@@ -4,10 +4,12 @@ namespace App\Livewire\Listing;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\Layout;
 use App\Models\Listing;
 use App\Models\Category;
 use App\Models\ListingImage;
 
+#[Layout('layouts.public')]
 class Create extends Component
 {
     use WithFileUploads;

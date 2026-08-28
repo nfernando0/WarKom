@@ -1,12 +1,14 @@
-<div>
-    {{-- Breadcrumbs --}}
-    <div class="bg-zinc-200 dark:bg-zinc-800 p-4 rounded-xl border border-zinc-300 dark:border-zinc-700">
-        <flux:breadcrumbs>
-            <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Home</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item :href="route('listing.index')" wire:navigate>Marketplace</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item>Buat Listing</flux:breadcrumbs.item>
-        </flux:breadcrumbs>
-    </div>
+<div class="py-8 sm:py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        {{-- Breadcrumbs --}}
+        <div class="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-2xs">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item :href="route('home')" wire:navigate>Home</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item :href="route('public.marketplace')" wire:navigate>Marketplace</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item :href="route('my-listings')" wire:navigate>Listing Saya</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>Pasang Iklan</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
+        </div>
 
     @if (! $userCommunity)
         <div class="mt-6">
@@ -135,4 +137,5 @@
             </div>
         </div>
     @endif
+    </div>
 </div>

@@ -55,7 +55,19 @@ Route::get('start-chat/{listing}', function (Listing $listing) {
 
 Route::get('komunitas', App\Livewire\Public\CommunityDirectory::class)->name('public.community');
 Route::get('kategori', App\Livewire\Public\CategoryDirectory::class)->name('public.category');
-Route::middleware(['auth', 'verified'])->get('chat/{conversation?}', App\Livewire\Chat\Index::class)->name('chat.index');
+Route::get('profile/{user?}', App\Livewire\Public\Profile::class)->name('user.profile');
+Route::get('profil', App\Livewire\Public\Profile::class)->name('user.profile.me');
+
+// Dedicated User Views (Auth required, using clean public layout)
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('chat/{conversation?}', App\Livewire\Chat\Index::class)->name('chat.index');
+    Route::get('my-listings', App\Livewire\Listing\MyListings::class)->name('my-listings');
+    Route::get('listing-saya', App\Livewire\Listing\MyListings::class)->name('listing.my');
+    Route::get('listings/create', App\Livewire\Listing\Create::class)->name('listing.create');
+    Route::get('listings/{listing}/edit', App\Livewire\Listing\Edit::class)->name('listing.edit');
+    Route::get('transactions', App\Livewire\Transaction\Index::class)->name('transaction.index');
+    Route::get('transaksi-saya', App\Livewire\Transaction\Index::class)->name('transaction.my');
+});
 
 Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () {
     Route::view('/', 'dashboard')->name('dashboard');
@@ -66,11 +78,7 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () 
     Route::get('categories', App\Livewire\Category\Index::class)->name('category.index');
 
     Route::get('listings', App\Livewire\Listing\Index::class)->name('listing.index');
-    Route::get('listings/create', App\Livewire\Listing\Create::class)->name('listing.create');
     Route::get('listings/{listing}', App\Livewire\Listing\Show::class)->name('listing.show');
-    Route::get('listings/{listing}/edit', App\Livewire\Listing\Edit::class)->name('listing.edit');
-
-    Route::get('transactions', App\Livewire\Transaction\Index::class)->name('transaction.index');
 });
 
 require __DIR__.'/settings.php';

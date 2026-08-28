@@ -167,12 +167,12 @@
                 <div class="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
                     <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Informasi Penjual</h3>
 
-                    <div class="flex items-center gap-3.5">
-                        <div class="size-12 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                    <a href="{{ route('user.profile', $listing->creator) }}" wire:navigate class="flex items-center gap-3.5 group hover:opacity-90 transition">
+                        <div class="size-12 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold text-sm shadow-sm group-hover:scale-105 transition">
                             {{ $listing->creator?->initials() ?? '?' }}
                         </div>
                         <div>
-                            <span class="font-bold text-base text-zinc-900 dark:text-zinc-100 block">
+                            <span class="font-bold text-base text-zinc-900 dark:text-zinc-100 block group-hover:text-primary-600 transition">
                                 {{ $listing->creator?->name ?? 'Penjual' }}
                             </span>
                             <div class="flex items-center gap-1 text-xs text-amber-500 mt-0.5">
@@ -181,7 +181,7 @@
                                 <span class="text-zinc-400">({{ $listing->creator?->reviewsReceived()->count() ?? 0 }} ulasan)</span>
                             </div>
                         </div>
-                    </div>
+                    </a>
 
                     @if ($listing->community)
                         <div class="pt-3 border-t border-zinc-100 dark:border-zinc-800 text-xs space-y-1">

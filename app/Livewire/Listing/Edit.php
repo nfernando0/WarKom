@@ -4,11 +4,13 @@ namespace App\Livewire\Listing;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\Layout;
 use App\Models\Listing;
 use App\Models\Category;
 use App\Models\ListingImage;
 use Illuminate\Support\Facades\Storage;
 
+#[Layout('layouts.public')]
 class Edit extends Component
 {
     use WithFileUploads;

@@ -1,11 +1,13 @@
-<div class="space-y-6">
-    {{-- Breadcrumbs --}}
-    <div class="bg-zinc-200 dark:bg-zinc-800 p-4 rounded-xl border border-zinc-300 dark:border-zinc-700">
-        <flux:breadcrumbs>
-            <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Home</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item>Transaksi</flux:breadcrumbs.item>
-        </flux:breadcrumbs>
-    </div>
+<div class="py-8 sm:py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        {{-- Breadcrumbs --}}
+        <div class="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-2xs">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item :href="route('home')" wire:navigate>Home</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item :href="route('public.marketplace')" wire:navigate>Marketplace</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>Transaksi Saya</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
+        </div>
 
     {{-- Notifications --}}
     @if (session()->has('success'))
@@ -382,4 +384,5 @@
             </div>
         </div>
     @endif
+    </div>
 </div>

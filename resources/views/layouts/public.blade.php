@@ -55,7 +55,7 @@
             {{-- Right Actions --}}
             <div class="flex items-center gap-3">
                 @auth
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-3">
                         <flux:button
                             variant="subtle"
                             icon="chat-bubble-left-right"
@@ -65,14 +65,58 @@
                         >
                             Pesan
                         </flux:button>
-                        <flux:button
-                            variant="primary"
-                            icon="layout-grid"
-                            :href="route('dashboard')"
-                            wire:navigate
-                        >
-                            Dashboard
-                        </flux:button>
+
+                        <flux:dropdown position="bottom" align="end">
+                            <button type="button" class="flex items-center gap-2 p-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition border border-zinc-200 dark:border-zinc-700/80 cursor-pointer">
+                                <div class="size-8 rounded-lg bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center font-bold text-xs text-white shadow-xs">
+                                    {{ auth()->user()->initials() }}
+                                </div>
+                                <div class="hidden sm:block text-left text-xs leading-tight pr-1">
+                                    <span class="font-bold text-zinc-900 dark:text-zinc-100 block truncate max-w-[120px]">{{ auth()->user()->name }}</span>
+                                    <span class="text-[10px] text-zinc-400 block">{{ auth()->user()->community?->name ?? 'Anggota' }}</span>
+                                </div>
+                                <flux:icon name="chevron-down" class="size-3.5 text-zinc-400" />
+                            </button>
+
+                            <flux:menu class="w-64">
+                                <div class="flex items-center gap-2.5 px-2 py-2 text-start">
+                                    <div class="size-9 rounded-xl bg-primary-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                                        {{ auth()->user()->initials() }}
+                                    </div>
+                                    <div class="grid flex-1 text-start text-xs leading-tight min-w-0">
+                                        <flux:heading class="truncate font-bold">{{ auth()->user()->name }}</flux:heading>
+                                        <flux:text class="truncate text-[11px] text-zinc-400">{{ auth()->user()->email }}</flux:text>
+                                    </div>
+                                </div>
+
+                                <flux:menu.separator />
+
+                                <flux:menu.item icon="user" :href="route('user.profile')" wire:navigate>
+                                    Profil Saya
+                                </flux:menu.item>
+                                <flux:menu.item icon="layout-grid" :href="route('dashboard')" wire:navigate>
+                                    Dashboard
+                                </flux:menu.item>
+                                <flux:menu.item icon="shopping-bag" :href="route('my-listings')" wire:navigate>
+                                    Listing Saya
+                                </flux:menu.item>
+                                <flux:menu.item icon="receipt-percent" :href="route('transaction.index')" wire:navigate>
+                                    Transaksi Saya
+                                </flux:menu.item>
+                                <flux:menu.item icon="chat-bubble-left-right" :href="route('chat.index')" wire:navigate>
+                                    Pesan Obrolan
+                                </flux:menu.item>
+
+                                <flux:menu.separator />
+
+                                <form method="POST" action="{{ route('logout') }}" class="w-full">
+                                    @csrf
+                                    <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full cursor-pointer text-red-600 dark:text-red-400">
+                                        Keluar
+                                    </flux:menu.item>
+                                </form>
+                            </flux:menu>
+                        </flux:dropdown>
                     </div>
                 @else
                     <flux:button
@@ -167,6 +211,7 @@
             <div>
                 <h4 class="font-bold text-zinc-800 dark:text-zinc-200 mb-3">Akun & Bantuan</h4>
                 <ul class="space-y-2">
+                    <li><a href="{{ route('user.profile') }}" class="hover:text-primary-600 transition">Profil Saya</a></li>
                     <li><a href="{{ route('login') }}" class="hover:text-primary-600 transition">Masuk Akun</a></li>
                     <li><a href="{{ route('register') }}" class="hover:text-primary-600 transition">Daftar Akun Baru</a></li>
                     <li><a href="{{ route('dashboard') }}" class="hover:text-primary-600 transition">Dashboard Pengguna</a></li>

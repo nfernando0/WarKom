@@ -4,11 +4,13 @@ namespace App\Livewire\Transaction;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\Layout;
 use App\Models\Transaction;
 use App\Models\Review;
 use App\Models\Message;
 use App\Models\Conversation;
 
+#[Layout('layouts.public')]
 class Index extends Component
 {
     use WithPagination;
