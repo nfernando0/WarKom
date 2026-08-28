@@ -91,9 +91,11 @@
                                 <flux:menu.item icon="user" :href="route('user.profile')" wire:navigate>
                                     Profil Saya
                                 </flux:menu.item>
-                                <flux:menu.item icon="layout-grid" :href="route('dashboard')" wire:navigate>
-                                    Dashboard
-                                </flux:menu.item>
+                                @if (auth()->user()->isAdmin())
+                                    <flux:menu.item icon="layout-grid" :href="route('dashboard')" wire:navigate>
+                                        Dashboard Admin
+                                    </flux:menu.item>
+                                @endif
                                 <flux:menu.item icon="shopping-bag" :href="route('my-listings')" wire:navigate>
                                     Listing Saya
                                 </flux:menu.item>
@@ -568,11 +570,10 @@
                 <h4 class="font-bold text-zinc-800 dark:text-zinc-200 mb-3">Akun</h4>
                 <ul class="space-y-2">
                     <li><a href="{{ route('user.profile') }}" class="hover:text-primary-600 transition">Profil Saya</a></li>
+                    <li><a href="{{ route('my-listings') }}" class="hover:text-primary-600 transition">Listing Saya</a></li>
+                    <li><a href="{{ route('transaction.index') }}" class="hover:text-primary-600 transition">Transaksi Saya</a></li>
                     <li><a href="{{ route('login') }}" class="hover:text-primary-600 transition">Masuk Akun</a></li>
-                    <li><a href="{{ route('register') }}" class="hover:text-primary-600 transition">Daftar Akun
-                            Baru</a></li>
-                    <li><a href="{{ route('dashboard') }}" class="hover:text-primary-600 transition">Dashboard
-                            Pengguna</a></li>
+                    <li><a href="{{ route('register') }}" class="hover:text-primary-600 transition">Daftar Akun Baru</a></li>
                 </ul>
             </div>
         </div>

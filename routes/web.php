@@ -69,8 +69,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('transaksi-saya', App\Livewire\Transaction\Index::class)->name('transaction.my');
 });
 
-Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () {
-    Route::view('/', 'dashboard')->name('dashboard');
+Route::middleware(['auth', 'verified', 'admin'])->prefix('dashboard')->group(function () {
+    Route::get('/', function () {
+        $stats = [
+            'communities' => \App\Models\Community::count(),
+            'categories' => \App\Models\Category::count(),
+            'users' => \App\Models\User::count(),
+            'listings' => \App\Models\Listing::count(),
+            'active_listings' => \App\Models\Listing::where('status', 'tersedia')->count(),
+            'transactions' => \App\Models\Transaction::where('status', 'selesai')->count(),
+        ];
+        $recentCommunities = \App\Models\Community::withCount('members')->latest()->take(5)->get();
+        $recentListings = \App\Models\Listing::with(['category', 'creator', 'community'])->latest()->take(5)->get();
+
+        return view('dashboard', compact('stats', 'recentCommunities', 'recentListings'));
+    })->name('dashboard');
 
     Route::get('community', App\Livewire\Community\Index::class)->name('community.index');
     Route::get('community/create', App\Livewire\Community\Create::class)->name('community.create');
