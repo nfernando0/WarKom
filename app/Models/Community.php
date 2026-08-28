@@ -36,4 +36,12 @@ class Community extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    /**
+     * Get the listings of the community.
+     */
+    public function listings(): HasMany
+    {
+        return $this->hasMany(Listing::class);
+    }
 }

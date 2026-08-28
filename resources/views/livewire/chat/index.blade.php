@@ -1,14 +1,16 @@
-<div wire:poll.3s="markActiveAsRead" class="flex flex-col h-[calc(100vh-8rem)]">
-    {{-- Breadcrumbs --}}
-    <div class="mb-4 bg-zinc-200 dark:bg-zinc-800 p-3.5 rounded-xl border border-zinc-300 dark:border-zinc-700 shrink-0">
-        <flux:breadcrumbs>
-            <flux:breadcrumbs.item :href="route('dashboard')" wire:navigate>Home</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item>Pesan & Chat</flux:breadcrumbs.item>
-        </flux:breadcrumbs>
-    </div>
+<div class="py-6 sm:py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div wire:poll.3s="markActiveAsRead" class="flex flex-col h-[calc(100vh-14rem)] min-h-[550px]">
+        {{-- Breadcrumbs --}}
+        <div class="mb-4 bg-white dark:bg-zinc-900 p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-2xs shrink-0">
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item :href="route('home')" wire:navigate>Home</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item :href="route('public.marketplace')" wire:navigate>Marketplace</flux:breadcrumbs.item>
+                <flux:breadcrumbs.item>Pesan & Obrolan</flux:breadcrumbs.item>
+            </flux:breadcrumbs>
+        </div>
 
-    {{-- Main Chat Box Layout --}}
-    <div class="flex-1 min-h-0 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex overflow-hidden">
+        {{-- Main Chat Box Layout --}}
+        <div class="flex-1 min-h-0 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex overflow-hidden">
         
         {{-- Left Sidebar: Conversations List --}}
         <div class="w-full md:w-80 lg:w-96 border-r border-zinc-200 dark:border-zinc-800 flex flex-col {{ $activeConversationId ? 'hidden md:flex' : 'flex' }} shrink-0 bg-zinc-50/50 dark:bg-zinc-900/50">
@@ -412,4 +414,5 @@
             @endif
         </div>
     </div>
+</div>
 </div>

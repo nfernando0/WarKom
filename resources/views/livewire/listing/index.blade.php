@@ -1,4 +1,4 @@
-<div>
+<div class="space-y-6">
     {{-- Breadcrumbs --}}
     <div class="bg-zinc-200 dark:bg-zinc-800 p-4 rounded-xl border border-zinc-300 dark:border-zinc-700">
         <flux:breadcrumbs>
@@ -9,18 +9,16 @@
 
     {{-- Notifications --}}
     @if (session()->has('success'))
-        <div class="mt-4">
-            <flux:callout variant="success" icon="check-circle" :heading="session('success')" />
-        </div>
+        <flux:callout variant="success" icon="check-circle" :heading="session('success')" />
     @endif
 
     {{-- Header & Create Action --}}
-    <div class="mt-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <flux:heading size="xl">Marketplace Komunitas</flux:heading>
             <flux:subheading>
-                @if ($userCommunity)
-                    Menampilkan produk di komunitas <strong class="text-zinc-900 dark:text-zinc-100">{{ $userCommunity->name }}</strong>
+                @if ($userCommunity && $scope === 'community')
+                    Menampilkan produk di dalam komunitas <strong class="text-zinc-900 dark:text-zinc-100">{{ $userCommunity->name }}</strong>
                 @else
                     Jual beli barang praktis dan aman di dalam komunitas Anda.
                 @endif
@@ -29,13 +27,56 @@
 
         <div class="flex items-center gap-2 shrink-0">
             <flux:button variant="primary" icon="plus" :href="route('listing.create')" wire:navigate>
-                Buat Listing
+                Buat Listing Baru
             </flux:button>
         </div>
     </div>
 
+    {{-- Scope Toggle Tabs & Category Chips --}}
+    <div class="space-y-3">
+        @if ($userCommunity)
+            <div class="flex items-center gap-1 p-1 bg-zinc-200/70 dark:bg-zinc-800/70 rounded-xl w-fit text-xs font-medium">
+                <button
+                    type="button"
+                    wire:click="$set('scope', 'community')"
+                    class="py-1.5 px-3 rounded-lg transition {{ $scope === 'community' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200' }}"
+                >
+                    Komunitas Saya ({{ $userCommunity->name }})
+                </button>
+                <button
+                    type="button"
+                    wire:click="$set('scope', 'all')"
+                    class="py-1.5 px-3 rounded-lg transition {{ $scope === 'all' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200' }}"
+                >
+                    Semua Komunitas
+                </button>
+            </div>
+        @endif
+
+        {{-- Horizontal Category Chips --}}
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
+            <button
+                type="button"
+                wire:click="$set('selectedCategory', '')"
+                class="px-3.5 py-1.5 rounded-full border transition shrink-0 {{ empty($selectedCategory) ? 'bg-primary-600 text-white border-primary-600 font-semibold' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300' }}"
+            >
+                Semua Kategori
+            </button>
+            @foreach ($categories as $cat)
+                <button
+                    type="button"
+                    wire:key="cat-chip-{{ $cat->id }}"
+                    wire:click="selectCategory('{{ $cat->id }}')"
+                    class="px-3.5 py-1.5 rounded-full border transition shrink-0 {{ $selectedCategory == $cat->id ? 'bg-primary-600 text-white border-primary-600 font-semibold' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300' }}"
+                >
+                    {{ $cat->name }} ({{ $cat->listings_count }})
+                </button>
+            @endforeach
+        </div>
+    </div>
+
     {{-- Search & Filters Card --}}
-    <div class="mt-6 p-4 rounded-xl bg-zinc-100/80 dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 space-y-4">
+    <div class="p-4 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-3">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             {{-- Search input --}}
             <div class="sm:col-span-2">
@@ -43,23 +84,23 @@
                     wire:model.live.debounce.300ms="search"
                     placeholder="Cari nama barang atau deskripsi..."
                     icon="magnifying-glass"
+                    size="sm"
                     clearable
                 />
             </div>
 
-            {{-- Category select --}}
+            {{-- Sorting --}}
             <div>
-                <flux:select wire:model.live="selectedCategory" placeholder="Semua Kategori">
-                    <flux:select.option value="">Semua Kategori</flux:select.option>
-                    @foreach ($categories as $cat)
-                        <flux:select.option value="{{ $cat->id }}">{{ $cat->name }}</flux:select.option>
-                    @endforeach
+                <flux:select wire:model.live="sortBy" size="sm">
+                    <flux:select.option value="latest">Terbaru</flux:select.option>
+                    <flux:select.option value="price_asc">Harga Terendah</flux:select.option>
+                    <flux:select.option value="price_desc">Harga Tertinggi</flux:select.option>
                 </flux:select>
             </div>
 
             {{-- Condition select --}}
             <div>
-                <flux:select wire:model.live="selectedCondition" placeholder="Semua Kondisi">
+                <flux:select wire:model.live="selectedCondition" size="sm">
                     <flux:select.option value="">Semua Kondisi</flux:select.option>
                     <flux:select.option value="baru">Baru</flux:select.option>
                     <flux:select.option value="bekas">Bekas</flux:select.option>
@@ -67,22 +108,22 @@
             </div>
         </div>
 
-        @if ($search || $selectedCategory || $selectedCondition || $selectedStatus)
-            <div class="flex items-center justify-between pt-2 border-t border-zinc-200 dark:border-zinc-800 text-xs">
+        @if ($search || $selectedCategory || $selectedCondition || $selectedStatus !== 'tersedia' || $sortBy !== 'latest')
+            <div class="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800 text-xs">
                 <span class="text-zinc-500">Filter aktif diterapkan</span>
                 <flux:button size="xs" variant="ghost" wire:click="resetFilters">
-                    Reset Filter
+                    Reset Semua Filter
                 </flux:button>
             </div>
         @endif
     </div>
 
     {{-- Listings Grid --}}
-    <div class="mt-6">
+    <div>
         @if ($listings->isEmpty())
-            <div class="py-16 text-center bg-zinc-50 dark:bg-zinc-900/40 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-8">
-                <div class="size-16 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-4 text-zinc-400">
-                    <flux:icon name="shopping-bag" class="size-8" />
+            <div class="py-16 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-8 shadow-xs">
+                <div class="size-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-4 text-zinc-400">
+                    <flux:icon name="shopping-bag" class="size-8 stroke-1" />
                 </div>
                 <flux:heading size="lg">Belum Ada Listing</flux:heading>
                 <flux:text class="mt-1 max-w-sm mx-auto">
@@ -101,7 +142,7 @@
         @else
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 @foreach ($listings as $listing)
-                    <div wire:key="listing-{{ $listing->id }}" class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-sm hover:shadow-md transition duration-200 flex flex-col overflow-hidden">
+                    <div wire:key="listing-{{ $listing->id }}" class="group bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-xs hover:shadow-md transition duration-200 flex flex-col overflow-hidden">
                         {{-- Image area --}}
                         <a href="{{ route('listing.show', $listing) }}" wire:navigate class="block relative aspect-square w-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
                             @if ($listing->images->isNotEmpty())

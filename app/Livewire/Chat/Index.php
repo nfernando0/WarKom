@@ -3,11 +3,13 @@
 namespace App\Livewire\Chat;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\Transaction;
 use Illuminate\Support\Carbon;
 
+#[Layout('layouts.public')]
 class Index extends Component
 {
     public ?int $activeConversationId = null;

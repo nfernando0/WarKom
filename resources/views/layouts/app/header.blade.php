@@ -16,6 +16,9 @@
                 <flux:navbar.item icon="users" :href="route('community.index')" :current="request()->routeIs('community.*')" wire:navigate>
                     {{ __('Community') }}
                 </flux:navbar.item>
+                <flux:navbar.item icon="tag" :href="route('category.index')" :current="request()->routeIs('category.*')" wire:navigate>
+                    {{ __('Kategori') }}
+                </flux:navbar.item>
                 <flux:navbar.item icon="shopping-bag" :href="route('listing.index')" :current="request()->routeIs('listing.*')" wire:navigate>
                     {{ __('Marketplace') }}
                 </flux:navbar.item>
@@ -76,6 +79,9 @@
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="users" :href="route('community.index')" :current="request()->routeIs('community.*')" wire:navigate>
                         {{ __('Community') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="tag" :href="route('category.index')" :current="request()->routeIs('category.*')" wire:navigate>
+                        {{ __('Kategori') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="shopping-bag" :href="route('listing.index')" :current="request()->routeIs('listing.*')" wire:navigate>
                         {{ __('Marketplace') }}

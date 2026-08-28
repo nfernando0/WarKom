@@ -8,6 +8,9 @@ use App\Models\User;
 
 class Index extends Component
 {
+    public string $search = '';
+    public string $viewMode = 'grid'; // 'grid' or 'table'
+
     // Join Community state
     public string $invite_code = '';
     public bool $showJoinModal = false;
@@ -36,8 +39,13 @@ class Index extends Component
     ];
 
     protected array $messages = [
-        'invite_code.required' => 'Invite code is required',
-        'invite_code.min' => 'Invite code must be at least 3 characters long',
+        'invite_code.required' => 'Kode undangan wajib diisi.',
+        'invite_code.min' => 'Kode undangan minimal 3 karakter.',
+    ];
+
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'viewMode' => ['except' => 'grid'],
     ];
 
     public function openJoinModal(): void
@@ -45,7 +53,7 @@ class Index extends Component
         $user = auth()->user();
 
         if (! empty($user->community_id)) {
-            session()->flash('error', 'You already belong to a community. Please leave your current community first before joining another.');
+            session()->flash('error', 'Anda sudah terdaftar di suatu komunitas. Silakan keluar terlebih dahulu sebelum bergabung dengan komunitas lain.');
             return;
         }
 
@@ -68,14 +76,14 @@ class Index extends Component
         $user = auth()->user();
 
         if (! empty($user->community_id)) {
-            $this->addError('invite_code', 'You already belong to a community. Please leave your current community first before joining another.');
+            $this->addError('invite_code', 'Anda sudah terdaftar di suatu komunitas. Silakan keluar terlebih dahulu.');
             return;
         }
 
         $community = Community::where('invite_code', trim($this->invite_code))->first();
 
         if (! $community) {
-            $this->addError('invite_code', 'Invalid invite code. Community not found.');
+            $this->addError('invite_code', 'Kode undangan tidak valid atau komunitas tidak ditemukan.');
             return;
         }
 
@@ -85,7 +93,7 @@ class Index extends Component
 
         $this->closeJoinModal();
 
-        session()->flash('success', "Successfully joined \"{$community->name}\"!");
+        session()->flash('success', "Selamat! Anda berhasil bergabung dengan komunitas \"{$community->name}\".");
     }
 
     public function leaveCommunity(): void
@@ -96,30 +104,29 @@ class Index extends Component
             return;
         }
 
-        $communityName = $user->community?->name ?? 'the community';
+        $communityName = $user->community?->name ?? 'komunitas';
 
         $user->update([
             'community_id' => null,
         ]);
 
-        session()->flash('success', "You have left \"{$communityName}\".");
+        session()->flash('success', "Anda telah keluar dari komunitas {$communityName}.");
     }
 
     public function openEditModal(int $id): void
     {
         if (! auth()->user()?->isAdmin()) {
-            abort(403, 'Unauthorized action.');
+            abort(403, 'Unauthorized.');
         }
 
         $community = Community::findOrFail($id);
-
         $this->editingCommunityId = $community->id;
         $this->edit_name = $community->name;
         $this->edit_description = $community->description ?? '';
-        $this->edit_location = $community->location;
+        $this->edit_location = $community->location ?? '';
         $this->edit_invite_code = $community->invite_code;
-        $this->reset(['add_member_user_id', 'add_member_email']);
-
+        $this->add_member_user_id = '';
+        $this->add_member_email = '';
         $this->resetErrorBag();
         $this->showEditModal = true;
     }
@@ -127,143 +134,75 @@ class Index extends Component
     public function closeEditModal(): void
     {
         $this->showEditModal = false;
-        $this->reset(['editingCommunityId', 'edit_name', 'edit_description', 'edit_location', 'edit_invite_code', 'add_member_user_id', 'add_member_email']);
+        $this->editingCommunityId = null;
+        $this->reset(['edit_name', 'edit_description', 'edit_location', 'edit_invite_code', 'add_member_user_id', 'add_member_email']);
         $this->resetErrorBag();
     }
 
     public function update(): void
     {
         if (! auth()->user()?->isAdmin()) {
-            abort(403, 'Unauthorized action.');
+            abort(403, 'Unauthorized.');
         }
 
         $this->validate([
-            'edit_name' => 'required|string|min:3',
-            'edit_description' => 'required|string|min:3',
-            'edit_location' => 'required|string|min:3',
-            'edit_invite_code' => 'required|string|min:3|unique:communities,invite_code,' . $this->editingCommunityId,
-        ], [
-            'edit_name.required' => 'Name is required',
-            'edit_name.min' => 'Name must be at least 3 characters long',
-            'edit_description.required' => 'Description is required',
-            'edit_description.min' => 'Description must be at least 3 characters long',
-            'edit_location.required' => 'Location is required',
-            'edit_location.min' => 'Location must be at least 3 characters long',
-            'edit_invite_code.required' => 'Invite code is required',
-            'edit_invite_code.min' => 'Invite code must be at least 3 characters long',
-            'edit_invite_code.unique' => 'Invite code has already been taken',
+            'edit_name' => 'required|string|min:3|max:255',
+            'edit_description' => 'nullable|string|max:1000',
+            'edit_location' => 'nullable|string|max:255',
+            'edit_invite_code' => 'required|string|min:3|max:50|unique:communities,invite_code,' . $this->editingCommunityId,
         ]);
 
         $community = Community::findOrFail($this->editingCommunityId);
-
         $community->update([
-            'name' => $this->edit_name,
-            'description' => $this->edit_description,
-            'location' => $this->edit_location,
-            'invite_code' => $this->edit_invite_code,
+            'name' => trim($this->edit_name),
+            'description' => trim($this->edit_description),
+            'location' => trim($this->edit_location),
+            'invite_code' => trim($this->edit_invite_code),
         ]);
 
         $this->closeEditModal();
-
-        session()->flash('success', "Community \"{$community->name}\" updated successfully.");
-    }
-
-    public function addMemberToCommunity(): void
-    {
-        if (! auth()->user()?->isAdmin()) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $user = null;
-        if (! empty($this->add_member_user_id)) {
-            $user = User::find($this->add_member_user_id);
-        } elseif (! empty($this->add_member_email)) {
-            $user = User::where('email', trim($this->add_member_email))->first();
-        }
-
-        if (! $user) {
-            $this->addError('add_member_error', 'User not found. Please select a user or enter a registered email.');
-            return;
-        }
-
-        if ($user->community_id === $this->editingCommunityId) {
-            $this->addError('add_member_error', 'User is already a member of this community.');
-            return;
-        }
-
-        $user->update([
-            'community_id' => $this->editingCommunityId,
-        ]);
-
-        $this->reset(['add_member_user_id', 'add_member_email']);
-        $this->resetErrorBag('add_member_error');
-
-        session()->flash('success', "Member \"{$user->name}\" added to the community.");
-    }
-
-    public function removeMemberFromEdit(int $userId): void
-    {
-        if (! auth()->user()?->isAdmin()) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $member = User::findOrFail($userId);
-
-        if ($member->id === auth()->id()) {
-            $this->addError('add_member_error', 'You cannot remove yourself from the community.');
-            return;
-        }
-
-        if ($member->community_id === $this->editingCommunityId) {
-            $member->update(['community_id' => null]);
-            session()->flash('success', "Member \"{$member->name}\" was removed from the community.");
-        }
+        session()->flash('success', "Komunitas \"{$community->name}\" berhasil diperbarui.");
     }
 
     public function openDeleteModal(int $id): void
     {
         if (! auth()->user()?->isAdmin()) {
-            abort(403, 'Unauthorized action.');
+            abort(403, 'Unauthorized.');
         }
 
         $community = Community::findOrFail($id);
-
         $this->deletingCommunityId = $community->id;
         $this->deletingCommunityName = $community->name;
-
         $this->showDeleteModal = true;
     }
 
     public function closeDeleteModal(): void
     {
         $this->showDeleteModal = false;
-        $this->reset(['deletingCommunityId', 'deletingCommunityName']);
+        $this->deletingCommunityId = null;
+        $this->deletingCommunityName = '';
     }
 
     public function delete(): void
     {
         if (! auth()->user()?->isAdmin()) {
-            abort(403, 'Unauthorized action.');
+            abort(403, 'Unauthorized.');
         }
 
         $community = Community::findOrFail($this->deletingCommunityId);
         $name = $community->name;
 
+        // Reset members community_id
+        User::where('community_id', $community->id)->update(['community_id' => null]);
         $community->delete();
 
         $this->closeDeleteModal();
-
-        session()->flash('success', "Community \"{$name}\" deleted successfully.");
+        session()->flash('success', "Komunitas \"{$name}\" berhasil dihapus.");
     }
 
-    public function openMembersModal(int $communityId): void
+    public function openMembersModal(int $id): void
     {
-        if (! auth()->user()?->isAdmin()) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $this->selectedCommunityId = $communityId;
-        $this->resetErrorBag();
+        $this->selectedCommunityId = $id;
         $this->showMembersModal = true;
     }
 
@@ -277,24 +216,37 @@ class Index extends Component
     public function kickMember(int $userId): void
     {
         if (! auth()->user()?->isAdmin()) {
-            abort(403, 'Unauthorized action.');
+            abort(403, 'Unauthorized.');
         }
 
         $member = User::findOrFail($userId);
 
         if ($member->id === auth()->id()) {
-            $this->addError('kick_error', 'You cannot kick yourself from the community.');
+            $this->addError('kick_error', 'Anda tidak dapat mengeluarkan diri sendiri.');
             return;
         }
 
         if ($member->community_id === $this->selectedCommunityId) {
             $member->update(['community_id' => null]);
-            session()->flash('success', "Member \"{$member->name}\" was removed from the community.");
+            session()->flash('success', "Anggota \"{$member->name}\" telah dikeluarkan dari komunitas.");
         }
     }
 
     public function render()
     {
+        $query = Community::with('creator')
+            ->withCount(['members', 'listings'])
+            ->latest();
+
+        if (! empty($this->search)) {
+            $searchTerm = '%' . $this->search . '%';
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', $searchTerm)
+                  ->orWhere('description', 'like', $searchTerm)
+                  ->orWhere('location', 'like', $searchTerm);
+            });
+        }
+
         $selectedCommunity = $this->selectedCommunityId
             ? Community::with('members')->find($this->selectedCommunityId)
             : null;
@@ -303,19 +255,12 @@ class Index extends Component
             ? Community::with('members')->find($this->editingCommunityId)
             : null;
 
-        $availableUsers = ($this->editingCommunityId && auth()->user()?->isAdmin())
-            ? User::where(function ($query) {
-                $query->whereNull('community_id')
-                    ->orWhere('community_id', '!=', $this->editingCommunityId);
-            })->orderBy('name')->get()
-            : collect();
-
         return view('livewire.community.index', [
-            'communities' => Community::with('creator')->withCount('members')->latest()->get(),
+            'communities' => $query->get(),
             'currentCommunityId' => auth()->user()?->community_id,
             'selectedCommunity' => $selectedCommunity,
             'editingCommunity' => $editingCommunity,
-            'availableUsers' => $availableUsers,
-        ])->title('Communities - WarKom');
+            'isAdmin' => auth()->user()?->isAdmin() ?? false,
+        ])->title('Daftar Komunitas - WarKom');
     }
 }

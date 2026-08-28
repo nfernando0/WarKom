@@ -15,13 +15,17 @@ class Index extends Component
     public string $search = '';
     public string $selectedCategory = '';
     public string $selectedCondition = '';
-    public string $selectedStatus = '';
+    public string $selectedStatus = 'tersedia';
+    public string $scope = 'community'; // 'community' or 'all'
+    public string $sortBy = 'latest'; // 'latest', 'price_asc', 'price_desc'
 
     protected $queryString = [
         'search' => ['except' => ''],
-        'selectedCategory' => ['except' => ''],
+        'selectedCategory' => ['as' => 'cat', 'except' => ''],
         'selectedCondition' => ['except' => ''],
-        'selectedStatus' => ['except' => ''],
+        'selectedStatus' => ['except' => 'tersedia'],
+        'scope' => ['except' => 'community'],
+        'sortBy' => ['except' => 'latest'],
     ];
 
     public function updatingSearch(): void
@@ -44,9 +48,28 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function updatingScope(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSortBy(): void
+    {
+        $this->resetPage();
+    }
+
+    public function selectCategory(string $catId): void
+    {
+        $this->selectedCategory = ($this->selectedCategory === $catId) ? '' : $catId;
+        $this->resetPage();
+    }
+
     public function resetFilters(): void
     {
-        $this->reset(['search', 'selectedCategory', 'selectedCondition', 'selectedStatus']);
+        $this->reset(['search', 'selectedCategory', 'selectedCondition']);
+        $this->selectedStatus = 'tersedia';
+        $this->scope = 'community';
+        $this->sortBy = 'latest';
         $this->resetPage();
     }
 
@@ -62,7 +85,7 @@ class Index extends Component
         $title = $listing->title;
         $listing->delete();
 
-        session()->flash('success', "Listing \"{$title}\" has been deleted.");
+        session()->flash('success', "Listing \"{$title}\" berhasil dihapus.");
     }
 
     public function startChat(int $id): void
@@ -96,11 +119,19 @@ class Index extends Component
     {
         $user = auth()->user();
 
-        $query = Listing::with(['category', 'community', 'creator', 'images'])
-            ->latest();
+        $query = Listing::with(['category', 'community', 'creator', 'images']);
 
-        // Scope to user's community if member has a community
-        if ($user && $user->community_id) {
+        // Sorting
+        if ($this->sortBy === 'price_asc') {
+            $query->orderBy('price', 'asc');
+        } elseif ($this->sortBy === 'price_desc') {
+            $query->orderBy('price', 'desc');
+        } else {
+            $query->latest();
+        }
+
+        // Scope to user's community unless toggled to all
+        if ($this->scope === 'community' && $user && $user->community_id) {
             $query->where('community_id', $user->community_id);
         }
 
@@ -119,13 +150,13 @@ class Index extends Component
             $query->where('condition', $this->selectedCondition);
         }
 
-        if (! empty($this->selectedStatus)) {
+        if (! empty($this->selectedStatus) && $this->selectedStatus !== 'all') {
             $query->where('status', $this->selectedStatus);
         }
 
         return view('livewire.listing.index', [
             'listings' => $query->paginate(12),
-            'categories' => Category::orderBy('name')->get(),
+            'categories' => Category::withCount('listings')->orderBy('name')->get(),
             'userCommunity' => $user?->community,
         ])->title('Marketplace - WarKom');
     }
