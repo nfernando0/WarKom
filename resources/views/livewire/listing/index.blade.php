@@ -26,7 +26,7 @@
         </div>
 
         <div class="flex items-center gap-2 shrink-0">
-            <flux:button variant="primary" icon="plus" :href="route('listing.create')" wire:navigate>
+            <flux:button variant="primary" icon="plus" :href="route('admin.listing.create')" wire:navigate>
                 Buat Listing Baru
             </flux:button>
         </div>

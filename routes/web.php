@@ -91,7 +91,10 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('dashboard')->group(fun
     Route::get('categories', App\Livewire\Category\Index::class)->name('category.index');
 
     Route::get('listings', App\Livewire\Listing\Index::class)->name('listing.index');
+    Route::get('listings/create', App\Livewire\Admin\Listing\Create::class)->name('admin.listing.create');
     Route::get('listings/{listing}', App\Livewire\Listing\Show::class)->name('listing.show');
+
+    Route::get('transactions', App\Livewire\Admin\Transaction\Index::class)->name('admin.transaction.index');
 });
 
 require __DIR__.'/settings.php';

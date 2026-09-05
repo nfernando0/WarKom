@@ -228,4 +228,128 @@
         @endif
 
     </div>
+
+    {{-- Checkout Confirmation Modal --}}
+    @if ($showCheckoutModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <div class="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-2xl max-w-lg w-full p-6 space-y-6 animate-in fade-in zoom-in-95 duration-150">
+                
+                {{-- Header --}}
+                <div class="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800">
+                    <div>
+                        <flux:heading size="lg">Konfirmasi Pembelian</flux:heading>
+                        <flux:subheading>Pastikan rincian pesanan Anda sudah sesuai</flux:subheading>
+                    </div>
+                    <flux:button size="xs" variant="ghost" icon="x-mark" wire:click="closeCheckoutModal" />
+                </div>
+
+                {{-- Product Summary --}}
+                <div class="flex items-center gap-3.5 p-3.5 bg-zinc-50 dark:bg-zinc-800/40 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                    <div class="size-16 rounded-xl bg-zinc-200 dark:bg-zinc-700 overflow-hidden shrink-0">
+                        @if ($listing->images->isNotEmpty())
+                            <img src="{{ $listing->images->first()->url }}" class="w-full h-full object-cover" />
+                        @else
+                            <div class="w-full h-full flex items-center justify-center text-zinc-400">
+                                <flux:icon name="photo" class="size-6" />
+                            </div>
+                        @endif
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <span class="font-bold text-sm text-zinc-900 dark:text-zinc-100 block truncate">
+                            {{ $listing->title }}
+                        </span>
+                        <span class="text-xs text-zinc-500 block">
+                            Penjual: <strong>{{ $listing->creator?->name }}</strong>
+                        </span>
+                        <span class="text-base font-extrabold text-primary-600 dark:text-primary-400 block mt-0.5">
+                            Rp {{ number_format($listing->price, 0, ',', '.') }}
+                        </span>
+                    </div>
+                </div>
+
+                {{-- Payment Method Selection --}}
+                <div class="space-y-3">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500">Pilih Metode Pembayaran</label>
+                    
+                    <div class="grid grid-cols-1 gap-2.5">
+                        <label class="flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition {{ $paymentChannel === 'cod' ? 'border-primary-600 bg-primary-50/40 dark:bg-primary-950/20 ring-2 ring-primary-500/20' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/40' }}">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" wire:model.live="paymentChannel" value="cod" class="text-primary-600 focus:ring-primary-500" />
+                                <div>
+                                    <span class="font-bold text-sm text-zinc-900 dark:text-zinc-100 block">COD (Bayar di Tempat)</span>
+                                    <span class="text-xs text-zinc-500 block">Bayar tunai langsung saat serah terima barang</span>
+                                </div>
+                            </div>
+                            <flux:icon name="banknotes" class="size-5 text-zinc-400" />
+                        </label>
+
+                        <label class="flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition {{ $paymentChannel === 'qris' ? 'border-primary-600 bg-primary-50/40 dark:bg-primary-950/20 ring-2 ring-primary-500/20' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/40' }}">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" wire:model.live="paymentChannel" value="qris" class="text-primary-600 focus:ring-primary-500" />
+                                <div>
+                                    <span class="font-bold text-sm text-zinc-900 dark:text-zinc-100 block">QRIS (Instant Pay)</span>
+                                    <span class="text-xs text-zinc-500 block">Scan QRIS dari e-wallet / mobile banking apa saja</span>
+                                </div>
+                            </div>
+                            <flux:icon name="qr-code" class="size-5 text-zinc-400" />
+                        </label>
+
+                        <label class="flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition {{ $paymentChannel === 'bank_transfer' ? 'border-primary-600 bg-primary-50/40 dark:bg-primary-950/20 ring-2 ring-primary-500/20' : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/40' }}">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" wire:model.live="paymentChannel" value="bank_transfer" class="text-primary-600 focus:ring-primary-500" />
+                                <div>
+                                    <span class="font-bold text-sm text-zinc-900 dark:text-zinc-100 block">Transfer Bank / VA</span>
+                                    <span class="text-xs text-zinc-500 block">Transfer virtual account antar bank</span>
+                                </div>
+                            </div>
+                            <flux:icon name="credit-card" class="size-5 text-zinc-400" />
+                        </label>
+                    </div>
+                </div>
+
+                {{-- Notes for Seller --}}
+                <flux:field>
+                    <flux:label>Catatan untuk Penjual (Opsional)</flux:label>
+                    <flux:input
+                        wire:model="notes"
+                        placeholder="Contoh: Boleh ketemuan di pos satpam jam 4 sore?"
+                    />
+                </flux:field>
+
+                {{-- Cost Summary --}}
+                <div class="p-3.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-800 space-y-1.5 text-xs">
+                    <div class="flex items-center justify-between text-zinc-500">
+                        <span>Harga Barang</span>
+                        <span>Rp {{ number_format($listing->price, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-zinc-500">
+                        <span>Biaya Layanan Komunitas</span>
+                        <span class="text-emerald-600 font-bold">Gratis (Rp 0)</span>
+                    </div>
+                    <div class="flex items-center justify-between pt-1.5 border-t border-zinc-200 dark:border-zinc-700 text-sm font-extrabold text-zinc-900 dark:text-zinc-100">
+                        <span>Total Pembayaran</span>
+                        <span class="text-primary-600 dark:text-primary-400">Rp {{ number_format($listing->price, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+
+                {{-- Action Buttons --}}
+                <div class="pt-2 flex items-center justify-end gap-2.5">
+                    <flux:button variant="ghost" wire:click="closeCheckoutModal">
+                        Batal
+                    </flux:button>
+                    <flux:button
+                        variant="primary"
+                        wire:click="confirmPurchase"
+                        wire:loading.attr="disabled"
+                        icon="check"
+                        class="font-bold"
+                    >
+                        <span wire:loading.remove wire:target="confirmPurchase">Konfirmasi Pesanan</span>
+                        <span wire:loading wire:target="confirmPurchase">Memproses...</span>
+                    </flux:button>
+                </div>
+
+            </div>
+        </div>
+    @endif
 </div>

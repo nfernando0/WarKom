@@ -31,7 +31,7 @@
                 @php
                     $pendingTxCount = auth()->user()?->pendingTransactionsCount() ?? 0;
                 @endphp
-                <flux:navbar.item icon="receipt-percent" :href="route('transaction.index')" :current="request()->routeIs('transaction.*')" :badge="$pendingTxCount > 0 ? (string)$pendingTxCount : null" wire:navigate>
+                <flux:navbar.item icon="receipt-percent" :href="route('admin.transaction.index')" :current="request()->routeIs('admin.transaction.*')" :badge="$pendingTxCount > 0 ? (string)$pendingTxCount : null" wire:navigate>
                     {{ __('Transaksi') }}
                 </flux:navbar.item>
             </flux:navbar>

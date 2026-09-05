@@ -9,18 +9,41 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
-#[Fillable(['listing_id', 'buyer_id', 'seller_id', 'price', 'status', 'completed_at'])]
+#[Fillable([
+    'invoice_number',
+    'listing_id',
+    'buyer_id',
+    'seller_id',
+    'price',
+    'admin_fee',
+    'total_amount',
+    'status',
+    'payment_status',
+    'payment_channel',
+    'gateway_reference_id',
+    'payment_token',
+    'payment_url',
+    'completed_at',
+    'paid_at',
+    'expired_at',
+    'raw_response',
+])]
 class Transaction extends Model
 {
     protected $table = 'transactions';
 
-    protected function casts(): array
-    {
-        return [
-            'price' => 'decimal:2',
-            'completed_at' => 'datetime',
-        ];
-    }
+   protected function casts(): array
+{
+    return [
+        'price' => 'decimal:2',
+        'admin_fee' => 'decimal:2',
+        'total_amount' => 'decimal:2',
+        'completed_at' => 'datetime',
+        'paid_at' => 'datetime',
+        'expired_at' => 'datetime',
+        'raw_response' => 'array',
+    ];
+}
 
     public function listing(): BelongsTo
     {
