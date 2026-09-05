@@ -245,15 +245,16 @@
                                 <div class="flex flex-wrap items-center gap-2 mt-1">
                                     {{-- If Pending --}}
                                     @if ($trans->isPending())
-                                        <flux:button
-                                            size="sm"
-                                            variant="primary"
-                                            icon="check"
-                                            wire:click="completeTransaction({{ $trans->id }})"
-                                            wire:confirm="Konfirmasi bahwa transaksi telah selesai (barang telah diterima/diserahkan)?"
-                                        >
-                                            Selesaikan Transaksi
-                                        </flux:button>
+                                        @if ($isSeller)
+                                            <flux:button
+                                                size="sm"
+                                                variant="primary"
+                                                icon="check"
+                                                wire:click="openCompleteModal({{ $trans->id }})"
+                                            >
+                                                Selesaikan Transaksi
+                                            </flux:button>
+                                        @endif
                                         <flux:button
                                             size="sm"
                                             variant="subtle"
@@ -381,6 +382,71 @@
                         </flux:button>
                     </div>
                 </form>
+            </div>
+        </div>
+    @endif
+
+    {{-- Complete Transaction Confirmation Modal --}}
+    @if ($showCompleteModal && $selectedCompleteTransaction)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 max-w-md w-full shadow-xl space-y-5 animate-in fade-in zoom-in duration-150">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="size-10 rounded-full bg-emerald-100 dark:bg-emerald-950/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                            <flux:icon name="check-circle" class="size-6" />
+                        </div>
+                        <div>
+                            <flux:heading size="lg">Selesaikan Transaksi</flux:heading>
+                            <p class="text-xs text-zinc-500">Konfirmasi penyelesaian penjualan barang</p>
+                        </div>
+                    </div>
+                    <button type="button" wire:click="closeCompleteModal" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+                        <flux:icon name="x-mark" class="size-5" />
+                    </button>
+                </div>
+
+                {{-- Transaction Info Preview --}}
+                <div class="p-3.5 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl border border-zinc-200/80 dark:border-zinc-700/60 space-y-2.5">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-zinc-500">Barang:</span>
+                        <span class="font-semibold text-zinc-800 dark:text-zinc-200 truncate max-w-[200px]" title="{{ $selectedCompleteTransaction->listing?->title }}">
+                            {{ $selectedCompleteTransaction->listing?->title ?? 'Barang #' . $selectedCompleteTransaction->listing_id }}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-zinc-500">Pembeli:</span>
+                        <span class="font-medium text-zinc-800 dark:text-zinc-200">
+                            {{ $selectedCompleteTransaction->buyer?->name ?? 'Pembeli' }}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs border-t border-zinc-200/60 dark:border-zinc-700/40 pt-2">
+                        <span class="text-zinc-500">Total Transaksi:</span>
+                        <span class="font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                            Rp {{ number_format($selectedCompleteTransaction->price, 0, ',', '.') }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 rounded-xl p-3 text-xs text-amber-800 dark:text-amber-300 space-y-1">
+                    <p class="font-semibold flex items-center gap-1.5">
+                        <flux:icon name="information-circle" class="size-4 shrink-0" />
+                        Konfirmasi Penyerahan
+                    </p>
+                    <p class="text-amber-700 dark:text-amber-400 leading-relaxed">
+                        Pastikan barang telah diserahkan/diterima pembeli dan pembayaran telah tuntas. Setelah transaksi diselesaikan, status barang otomatis berubah menjadi <strong>Terjual</strong>.
+                    </p>
+                </div>
+
+                {{-- Action Buttons --}}
+                <div class="pt-2 flex items-center justify-end gap-2.5 border-t border-zinc-100 dark:border-zinc-800">
+                    <flux:button variant="ghost" type="button" wire:click="closeCompleteModal">
+                        Batal
+                    </flux:button>
+                    <flux:button variant="primary" type="button" wire:click="completeTransaction" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="completeTransaction">Ya, Selesaikan Transaksi</span>
+                        <span wire:loading wire:target="completeTransaction">Memproses...</span>
+                    </flux:button>
+                </div>
             </div>
         </div>
     @endif

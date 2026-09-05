@@ -17,7 +17,9 @@ class Community extends Model
         parent::boot();
 
         static::creating(function ($model) {
-            $model->created_by = auth()->id();
+            if (empty($model->created_by) && auth()->check()) {
+                $model->created_by = auth()->id();
+            }
         });
     }
 

@@ -279,11 +279,11 @@ class TransactionController extends Controller
     {
         $user = $request->user();
 
-        // Authorize: Buyer, Seller, or Admin
-        if ($transaction->buyer_id !== $user->id && $transaction->seller_id !== $user->id && ! $user->isAdmin()) {
+        // Authorize: Seller (pemilik barang) or Admin
+        if ($transaction->seller_id !== $user->id && ! $user->isAdmin()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Anda tidak memiliki hak akses untuk menyelesaikan transaksi ini.',
+                'message' => 'Hanya penjual (pemilik barang) atau Admin yang dapat menyelesaikan transaksi ini.',
             ], 403);
         }
 

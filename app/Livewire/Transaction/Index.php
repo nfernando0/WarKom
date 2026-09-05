@@ -19,6 +19,11 @@ class Index extends Component
     public string $statusFilter = 'all'; // 'all', 'pending', 'selesai', 'dibatalkan'
     public string $search = '';
 
+    // Complete Transaction Modal Properties
+    public bool $showCompleteModal = false;
+    public ?int $completeTransactionId = null;
+    public ?Transaction $selectedCompleteTransaction = null;
+
     // Review Modal Properties
     public bool $showReviewModal = false;
     public ?int $reviewTransactionId = null;
@@ -54,16 +59,47 @@ class Index extends Component
         }
     }
 
-    public function completeTransaction(int $id): void
+    public function openCompleteModal(int $id): void
     {
         $userId = auth()->id();
         $transaction = Transaction::with(['listing', 'buyer', 'seller'])->findOrFail($id);
 
-        if ($transaction->buyer_id !== $userId && $transaction->seller_id !== $userId) {
-            abort(403, 'Unauthorized.');
+        if ($transaction->seller_id !== $userId) {
+            abort(403, 'Hanya penjual (pemilik barang) yang dapat menyelesaikan transaksi.');
         }
 
         if (! $transaction->isPending()) {
+            return;
+        }
+
+        $this->completeTransactionId = $id;
+        $this->selectedCompleteTransaction = $transaction;
+        $this->showCompleteModal = true;
+    }
+
+    public function closeCompleteModal(): void
+    {
+        $this->showCompleteModal = false;
+        $this->completeTransactionId = null;
+        $this->selectedCompleteTransaction = null;
+    }
+
+    public function completeTransaction(?int $id = null): void
+    {
+        $targetId = $id ?? $this->completeTransactionId;
+        if (! $targetId) {
+            return;
+        }
+
+        $userId = auth()->id();
+        $transaction = Transaction::with(['listing', 'buyer', 'seller'])->findOrFail($targetId);
+
+        if ($transaction->seller_id !== $userId) {
+            abort(403, 'Hanya penjual (pemilik barang) yang dapat menyelesaikan transaksi.');
+        }
+
+        if (! $transaction->isPending()) {
+            $this->closeCompleteModal();
             return;
         }
 
@@ -85,6 +121,7 @@ class Index extends Component
         }
 
         session()->flash('success', "Transaksi untuk \"{$transaction->listing->title}\" telah berhasil diselesaikan!");
+        $this->closeCompleteModal();
     }
 
     public function cancelTransaction(int $id): void
